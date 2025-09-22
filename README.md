@@ -1,4 +1,10 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ScrollLab
+Experimental Next.js app for implementing and testing four scrolling techniques:
+
+- **Type I — Normal (control)**
+- **Type II — Highlighted Break-Contact**
+- **Type III — Limited-Distance Kinetic (Stop-at-Border)**
+- **Type IV — Limited + Highlighted**
 
 ## Getting Started
 
