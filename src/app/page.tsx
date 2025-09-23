@@ -1,103 +1,73 @@
-import Image from "next/image";
+// app/page.tsx
+"use client";
+import { useMemo } from "react";
+import { useScrollEngine } from "@/lib/scroll/useScrollEngine";
+import { TypeII } from "@/lib/scroll/strategies/TypeII";
+import { TypeIII } from "@/lib/scroll/strategies/TypeIII";
+import { TypeIV } from "@/lib/scroll/strategies/TypeIV";
 
-export default function Home() {
+
+export default function Page() {
+  const strategy = useMemo(() => TypeIV, []);
+  const { containerRef, contentRef, highlightRef } = useScrollEngine(strategy);
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <main className="min-h-svh bg-neutral-50 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100 transition-colors">
+      <div className="mx-auto max-w-screen-sm px-4 py-4 sm:px-6 sm:py-6">
+        {/* Header / context */}
+        <header className="mb-3 flex items-center justify-between">
+          <h1 className="text-xl font-semibold tracking-tight">ScrollLab</h1>
+          <span className="rounded-full border border-neutral-300/60 px-3 py-1 text-xs text-neutral-600 dark:border-neutral-700 dark:text-neutral-300">
+            Type IV — Highlighted Break-Contact
+          </span>
+        </header>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        {/* Scroll container */}
+        <div
+          ref={containerRef}
+          className="
+            relative h-[calc(100svh-7rem)]
+            overflow-hidden touch-none select-none
+            rounded-2xl border border-neutral-200/70 bg-white/90 shadow-sm
+            backdrop-blur-sm
+            dark:border-neutral-800 dark:bg-neutral-900/80
+          "
+        >
+          {/* Content */}
+          <div
+            ref={contentRef}
+            className="
+              will-change-transform
+              px-5 py-8
+              text-[17px] leading-8 sm:text-[18px] sm:leading-9
+              tracking-[0.005em]
+              [text-wrap:pretty]
+              space-y-5
+            "
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            {[...Array(100)].map((_, i) => (
+              <p key={i}>
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam
+                tincidunt sapien non magna lobortis, in faucibus massa dictum.
+                Integer euismod, arcu ut pulvinar viverra, nunc nisl convallis
+                nunc, vitae tempus arcu dui at magna. ({i + 1})
+              </p>
+            ))}
+          </div>
+
+          {/* Highlight circle (shown only during kinetic phase) */}
+          <div
+            ref={highlightRef}
+            className="pointer-events-none absolute rounded-full bg-yellow-400/20 ring-1 ring-yellow-400/25"
+            style={{ width: 80, height: 80, display: "none" }}
+          />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+
+        {/* Footnote / hint */}
+        <p className="mt-3 text-xs text-neutral-500 dark:text-neutral-400">
+          Tip: enable system dark mode to try the dark theme.
+        </p>
+      </div>
+    </main>
   );
 }
