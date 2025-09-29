@@ -1,7 +1,8 @@
 {
   "name": "scrolllab",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
+  "packageManager": "pnpm@9",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",

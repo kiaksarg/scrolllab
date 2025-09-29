@@ -17,11 +17,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "pnpm"
+          cache: "pnpm" # cache based on pnpm-lock.yaml
 
-      - uses: pnpm/action-setup@v4 # install pnpm
-        with:
-          version: 9 # pick version, or omit for latest
+      # Install & activate pnpm via Corepack (recommended by pnpm docs)
+      - run: corepack enable
+      - run: corepack prepare pnpm@9 --activate
+      - run: pnpm -v # sanity check: should print pnpm version
 
       - run: pnpm install --frozen-lockfile
       - run: pnpm build # generates out/
