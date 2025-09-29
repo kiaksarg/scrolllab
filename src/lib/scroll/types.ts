@@ -30,8 +30,8 @@ export interface ScrollCtx {
     inertia: { active: boolean; v0: number; startedAt: number } | null;
   };
 
-  metrics: (evt: any) => void;
-
+  metrics: <T>(evt: T) => void;
+  
   setOffset: (y: number) => void; // applies clamped translateY
 
   // ⬇️ now take both axes to place the circle precisely

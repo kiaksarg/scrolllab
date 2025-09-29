@@ -7,8 +7,8 @@ export function useScrollEngine(strategy: ScrollStrategy) {
   const highlightRef = useRef<HTMLDivElement>(null);
 
   const [ctx] = useState<ScrollCtx>(() => ({
-    container: null as any,
-    content: null as any,
+    container: null as unknown as HTMLElement,
+    content: null as unknown as HTMLElement,
     state: {
       isDragging: false,
       lastY: 0,

@@ -1,4 +1,4 @@
-import type { ScrollCtx, ScrollStrategy } from "../types";
+import type { ScrollStrategy } from "../types";
 
 const TAU = 500; // decay constant (ms)
 const FLICK_V_MIN = 0.5; // px/ms

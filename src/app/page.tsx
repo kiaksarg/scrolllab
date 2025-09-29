@@ -2,7 +2,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { useScrollEngine } from "@/lib/scroll/useScrollEngine";
-import type { TechniqueID } from "@/lib/scroll/types";
+import type { ScrollStrategy, TechniqueID } from "@/lib/scroll/types";
 
 import { TypeII } from "@/lib/scroll/strategies/TypeII";
 import { TypeIII } from "@/lib/scroll/strategies/TypeIII";
@@ -18,7 +18,7 @@ const LABELS: Record<TechniqueID, string> = {
   IV: "Type IV — Limited + Highlighted",
 };
 
-const STRATS: Partial<Record<TechniqueID, any>> = {
+const STRATS: Partial<Record<TechniqueID, ScrollStrategy>> = {
   // I: TypeI,
   II: TypeII,
   III: TypeIII,
