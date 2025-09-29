@@ -1,6 +1,6 @@
 # ScrollLab
 
-**Demo:** https://kiaksarg.github.io/scrolllab/
+**Demo:** https://arashg.dev/scrolllab/
 
 This implementation reproduces scrolling techniques disclosed in Viktor Kaptelinin’s patent application US 2023/0130520 A1 (published Apr 27, 2023):
 
