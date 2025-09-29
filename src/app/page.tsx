@@ -7,7 +7,6 @@ import type { TechniqueID } from "@/lib/scroll/types";
 import { TypeII } from "@/lib/scroll/strategies/TypeII";
 import { TypeIII } from "@/lib/scroll/strategies/TypeIII";
 import { TypeIV } from "@/lib/scroll/strategies/TypeIV";
-// If you have TypeI, import it too:
 // import { TypeI } from "@/lib/scroll/strategies/TypeI";
 
 import { paragraphsLong } from "@/common/paragraphs";
@@ -19,7 +18,6 @@ const LABELS: Record<TechniqueID, string> = {
   IV: "Type IV — Limited + Highlighted",
 };
 
-// Only include strategies you’ve actually implemented
 const STRATS: Partial<Record<TechniqueID, any>> = {
   // I: TypeI,
   II: TypeII,
