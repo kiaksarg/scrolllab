@@ -13,13 +13,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "pnpm" # <-- use pnpm cache
-      - run: corepack enable # enables pnpm
+          cache: "pnpm"
+
+      - uses: pnpm/action-setup@v4 # install pnpm
+        with:
+          version: 9 # pick version, or omit for latest
+
       - run: pnpm install --frozen-lockfile
-      - run: pnpm build # creates out/
+      - run: pnpm build # generates out/
       - name: Disable Jekyll
         run: touch out/.nojekyll
       - uses: actions/upload-pages-artifact@v3
