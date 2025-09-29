@@ -16,10 +16,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "npm"
-      - run: npm ci
-      - run: npm run build
-      - name: Disable Jekyll (avoid underscore issues)
+          cache: "pnpm" # <-- use pnpm cache
+      - run: corepack enable # enables pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build # creates out/
+      - name: Disable Jekyll
         run: touch out/.nojekyll
       - uses: actions/upload-pages-artifact@v3
         with:
