@@ -33,7 +33,7 @@ export function useScrollEngine(strategy: ScrollStrategy) {
       ctx.state.contentOffset = clamped;
     },
 
-    // ⬇️ NEW: place highlight using BOTH axes (docX, docY)
+    // Place highlight using BOTH axes (docX, docY)
     showHighlight: (docX: number, docY: number) => {
       if (!highlightRef.current || !containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();

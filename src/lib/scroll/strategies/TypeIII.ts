@@ -62,41 +62,90 @@ export const TypeIII: ScrollStrategy = {
     const inert = ctx.state.inertia;
     if (!inert?.active) return;
 
-    const dt = now - ctx.state.lastTs;
+    // 1) Time step
+    let dt = now - ctx.state.lastTs;
     ctx.state.lastTs = now;
+    if (dt > 32) dt = 32; // cap to avoid giant jumps after tab lag
 
-    // Exponential velocity decay
+    // 2) Decay velocity
     const decay = Math.exp(-dt / TAU);
-    ctx.state.velocity *= decay;
+    const v = (ctx.state.velocity *= decay); // px/ms
 
-    // Advance virtual scroll
-    ctx.setOffset(ctx.state.contentOffset - ctx.state.velocity * dt);
+    // 3) Prepare current state
+    const currentOffset = ctx.state.contentOffset;
 
-    // ---- Stop-at-border logic (core of Type III) ----
-    if (ctx.state.breakContact) {
-      const rect = ctx.container.getBoundingClientRect();
-      const trackedWinY =
-        ctx.state.breakContact.docY - ctx.state.contentOffset + rect.top;
-
-      if (ctx.state.velocity < 0) {
-        // scrolling up (content visually moves down)
-        if (trackedWinY <= rect.top) {
-          inert.active = false;
-        }
-      } else if (ctx.state.velocity > 0) {
-        // scrolling down (content visually moves up)
-        if (trackedWinY >= rect.bottom) {
-          inert.active = false;
-        }
-      }
+    // If no break-contact, just do normal inertial step
+    if (!ctx.state.breakContact) {
+      const nextOffset = currentOffset - v * dt;
+      ctx.setOffset(nextOffset);
+      if (Math.abs(ctx.state.velocity) < V_EPS) inert.active = false;
+      return;
     }
 
-    // Natural stop if motion is negligible
+    const rect = ctx.container.getBoundingClientRect();
+    const containerTop = rect.top;
+    const containerBottom = rect.bottom;
+    const docY = ctx.state.breakContact.docY;
+
+    // ---- CONFIG: how far inside to stop (px) ----
+    // If you render an 80px highlight circle (radius=40),
+    // set EDGE_MARGIN = 40 to keep the whole circle visible.
+    const EDGE_MARGIN = 24; // try 24..40 depending on your highlight
+
+    const TOP_LINE = containerTop + EDGE_MARGIN;
+    const BOTTOM_LINE = containerBottom - EDGE_MARGIN;
+
+    // 4) Where is the tracked point now and after a full step?
+    const trackedWinY_now = docY - currentOffset + containerTop;
+    const nextOffset = currentOffset - v * dt;
+    const trackedWinY_next = docY - nextOffset + containerTop;
+
+    // 5) If we're already inside the margin, clamp immediately and stop.
+    if (v <= 0 && trackedWinY_now <= TOP_LINE) {
+      const offsetAtLine = docY - TOP_LINE;
+      ctx.setOffset(offsetAtLine);
+      inert.active = false;
+      return;
+    }
+    if (v >= 0 && trackedWinY_now >= BOTTOM_LINE) {
+      const offsetAtLine = docY - BOTTOM_LINE;
+      ctx.setOffset(offsetAtLine);
+      inert.active = false;
+      return;
+    }
+
+    // 6) Will we cross the margin line during THIS frame?
+    if (v < 0 && trackedWinY_now > TOP_LINE && trackedWinY_next <= TOP_LINE) {
+      // fraction of this frame's step where we hit TOP_LINE
+      const deltaTracked = trackedWinY_next - trackedWinY_now; // negative
+      const alpha = (TOP_LINE - trackedWinY_now) / deltaTracked; // 0..1
+      const offsetAtHit = currentOffset - v * dt * alpha;
+      ctx.setOffset(offsetAtHit);
+      inert.active = false;
+      return;
+    }
+
+    if (
+      v > 0 &&
+      trackedWinY_now < BOTTOM_LINE &&
+      trackedWinY_next >= BOTTOM_LINE
+    ) {
+      const deltaTracked = trackedWinY_next - trackedWinY_now; // positive
+      const alpha = (BOTTOM_LINE - trackedWinY_now) / deltaTracked; // 0..1
+      const offsetAtHit = currentOffset - v * dt * alpha;
+      ctx.setOffset(offsetAtHit);
+      inert.active = false;
+      return;
+    }
+
+    // 7) No crossing: apply full step
+    ctx.setOffset(nextOffset);
+
+    // 8) Natural stop
     if (Math.abs(ctx.state.velocity) < V_EPS) {
       inert.active = false;
     }
   },
-
   teardown(ctx) {
     ctx.state.inertia = null;
   },

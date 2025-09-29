@@ -5,7 +5,7 @@ import { useScrollEngine } from "@/lib/scroll/useScrollEngine";
 import { TypeII } from "@/lib/scroll/strategies/TypeII";
 import { TypeIII } from "@/lib/scroll/strategies/TypeIII";
 import { TypeIV } from "@/lib/scroll/strategies/TypeIV";
-
+import { paragraphsLong } from "@/common/paragraphs";
 
 export default function Page() {
   const strategy = useMemo(() => TypeIV, []);
@@ -45,14 +45,19 @@ export default function Page() {
               space-y-5
             "
           >
-            {[...Array(100)].map((_, i) => (
+            {paragraphsLong.map((p, i) => (
+              <p key={i}>
+                {p} ({i + 1})
+              </p>
+            ))}
+            {/* {[...Array(100)].map((_, i) => (
               <p key={i}>
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam
                 tincidunt sapien non magna lobortis, in faucibus massa dictum.
                 Integer euismod, arcu ut pulvinar viverra, nunc nisl convallis
                 nunc, vitae tempus arcu dui at magna. ({i + 1})
               </p>
-            ))}
+            ))} */}
           </div>
 
           {/* Highlight circle (shown only during kinetic phase) */}
