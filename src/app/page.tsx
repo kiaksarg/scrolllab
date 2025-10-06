@@ -15,6 +15,7 @@ import ContentT1 from "@/components/ContentT1";
 import ContentT2 from "@/components/ContentT2";
 import ContentT3 from "@/components/ContentT3";
 import Image from "next/image";
+import ScrollSettings from "@/components/ScrollSettings";
 
 const prefix = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
@@ -41,9 +42,40 @@ const STRATS: Partial<Record<TechniqueID, ScrollStrategy>> = {
   IV: TypeIV,
 };
 
+const clamp = (v: number, min = 0.2, max = 2.0) =>
+  Math.min(max, Math.max(min, v));
+const LS_KEY = "scrolllab:gains";
+
 export default function Page() {
   const [sel, setSel] = useState<TechniqueID>("IV");
   const [contentSel, setContentSel] = useState<ContentID>("T1");
+
+  const [dragGain, setDragGain] = useState(0.9);
+  const [inertiaGain, setInertiaGain] = useState(0.75);
+
+  // Load once
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (!raw) return;
+      const { dragGain: d, inertiaGain: i } = JSON.parse(raw);
+      if (typeof d === "number") setDragGain(clamp(d));
+      if (typeof i === "number") setInertiaGain(clamp(i));
+    } catch {
+      // ignore malformed storage
+    }
+  }, []);
+
+  // Save on change
+  useEffect(() => {
+    localStorage.setItem(
+      LS_KEY,
+      JSON.stringify({
+        dragGain: clamp(dragGain),
+        inertiaGain: clamp(inertiaGain),
+      })
+    );
+  }, [dragGain, inertiaGain]);
 
   // Allow ?type=… & ?content=… in URL
   useEffect(() => {
@@ -127,8 +159,8 @@ export default function Page() {
   const strategy = useMemo(() => STRATS[sel] ?? TypeIV, [sel]);
 
   const { containerRef, contentRef, highlightRef } = useScrollEngine(strategy, {
-    dragGain: .8,
-    inertiaGain: .6,
+    dragGain: dragGain,
+    inertiaGain: inertiaGain,
   });
 
   // Render selected content
@@ -196,60 +228,75 @@ export default function Page() {
   return (
     <main className="min-h-svh bg-neutral-50 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100 transition-colors">
       <div className="mx-auto max-w-screen-sm px-4 py-4 sm:px-6 sm:py-6">
-        <header className="mb-3 flex items-center justify-between gap-3">
-          <h1 className="text-xl font-semibold tracking-tight">ScrollLab</h1>
+        <header className="mb-3">
+          <div className="flex items-center justify-between gap-3 sm:gap-4">
+            {/* Left label */}
+            <h1 className="text-xl font-semibold tracking-tight shrink-0">
+              SCRL
+            </h1>
 
-          {/* Top controls (mobile-friendly) */}
-          <div className="flex items-center gap-2">
-            {/* Content picker */}
-            <select
-              id="content-picker"
-              value={contentSel}
-              onChange={(e) => setContentSel(e.target.value as ContentID)}
-              className="
-                h-8 rounded-full border border-neutral-300/60 bg-white/80 px-3 text-xs
-                dark:border-neutral-700 dark:bg-neutral-900/70
-                shadow-sm backdrop-blur
-              "
-              title="Select content"
-            >
-              {(["T1", "T2", "T3", "TEXT"] as ContentID[]).map((id) => (
-                <option key={id} value={id}>
-                  {CONTENT_LABELS[id]}
-                </option>
-              ))}
-            </select>
+            {/* Right group (settings + content + technique) */}
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-end">
+              {/* Settings gear */}
+              <ScrollSettings
+                dragGain={dragGain}
+                inertiaGain={inertiaGain}
+                onChange={({ dragGain: d, inertiaGain: i }) => {
+                  setDragGain(d);
+                  setInertiaGain(i);
+                }}
+              />
 
-            {/* Technique segmented picker */}
-            <div
-              role="tablist"
-              aria-label="Scrolling technique"
-              className="inline-flex items-center gap-1 rounded-full border border-neutral-300/60 p-1 text-xs dark:border-neutral-700 bg-white/70 dark:bg-neutral-900/70 backdrop-blur"
-            >
-              {(["I", "II", "III", "IV"] as TechniqueID[]).map((id) => {
-                const active = sel === id;
-                const disabled = !STRATS[id];
-                return (
-                  <button
-                    key={id}
-                    role="tab"
-                    aria-selected={active}
-                    onClick={() => !disabled && setSel(id)}
-                    disabled={disabled}
-                    className={[
-                      "px-3 py-1 rounded-full transition-colors",
-                      disabled
-                        ? "opacity-40 cursor-not-allowed"
-                        : active
-                        ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
-                        : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800",
-                    ].join(" ")}
-                    title={LABELS[id]}
-                  >
-                    {id}
-                  </button>
-                );
-              })}
+              {/* Content picker */}
+              <select
+                id="content-picker"
+                value={contentSel}
+                onChange={(e) => setContentSel(e.target.value as ContentID)}
+                className="
+          h-8 rounded-full border border-neutral-300/60 bg-white/80 px-3 text-xs
+          dark:border-neutral-700 dark:bg-neutral-900/70
+          shadow-sm backdrop-blur
+        "
+                title="Select content"
+              >
+                {(["T1", "T2", "T3", "TEXT"] as ContentID[]).map((id) => (
+                  <option key={id} value={id}>
+                    {CONTENT_LABELS[id]}
+                  </option>
+                ))}
+              </select>
+
+              {/* Technique segmented picker */}
+              <div
+                role="tablist"
+                aria-label="Scrolling technique"
+                className="inline-flex items-center gap-1 rounded-full border border-neutral-300/60 p-1 text-xs dark:border-neutral-700 bg-white/70 dark:bg-neutral-900/70 backdrop-blur"
+              >
+                {(["I", "II", "III", "IV"] as TechniqueID[]).map((id) => {
+                  const active = sel === id;
+                  const disabled = !STRATS[id];
+                  return (
+                    <button
+                      key={id}
+                      role="tab"
+                      aria-selected={active}
+                      onClick={() => !disabled && setSel(id)}
+                      disabled={disabled}
+                      className={[
+                        "px-3 py-1 rounded-full transition-colors",
+                        disabled
+                          ? "opacity-40 cursor-not-allowed"
+                          : active
+                          ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
+                          : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800",
+                      ].join(" ")}
+                      title={LABELS[id]}
+                    >
+                      {id}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </header>

@@ -1,7 +1,8 @@
 import type { ScrollStrategy } from "../types";
 
-const TAU = 500; // ms decay constant (pilot-tune)
-const FLICK_V_MIN = 0.5; // px/ms; also require short release interval
+const TAU = 500; // ms decay constant
+const FLICK_V_MIN = 0.5; // px/ms
+const V_EPS = 0.02; // stop threshold
 
 export const TypeII: ScrollStrategy = {
   id: "II",
@@ -20,14 +21,19 @@ export const TypeII: ScrollStrategy = {
     if (!ctx.state.isDragging) return;
     const now = performance.now();
     const dy = e.clientY - ctx.state.lastY;
-    const dt = now - ctx.state.lastTs;
+    let dt = now - ctx.state.lastTs;
 
+    // update tracking
     ctx.state.lastTs = now;
     ctx.state.lastY = e.clientY;
-    ctx.state.velocity = dt > 0 ? dy / dt : 0; // px/ms (vertical only)
 
-    // Virtual vertical scroll:
-    ctx.setOffset(ctx.state.contentOffset - dy);
+    // raw finger velocity (no gain here)
+    if (dt > 32) dt = 32; // cap to avoid huge jumps after tab stalls
+    ctx.state.velocity = dt > 0 ? dy / dt : 0; // px/ms
+
+    // DRAG: apply dragGain via helper (ONLY this)
+    ctx.addOffsetDelta(-dy);
+    // ❌ remove: ctx.setOffset(ctx.state.contentOffset - dy);
   },
 
   onPointerUp(e, ctx) {
@@ -35,16 +41,20 @@ export const TypeII: ScrollStrategy = {
     const dt = now - ctx.state.lastTs;
     ctx.state.isDragging = false;
 
-    // Flick = fast release with sufficient velocity
+    // flick detection uses raw finger velocity
     const isFlick = Math.abs(ctx.state.velocity) > FLICK_V_MIN && dt < 180;
     if (isFlick) {
-      const rect = ctx.container.getBoundingClientRect();
+      const rect = ctx.container!.getBoundingClientRect();
       const winX = e.clientX;
       const winY = e.clientY;
 
-      // Map break-contact to document coords at lift-off:
+      // break-contact doc coords
       const docY = ctx.state.contentOffset + (winY - rect.top);
-      const docX = winX - rect.left; // no horizontal virtual offset (yet)
+      const docX = winX - rect.left;
+
+      // FLING: only inertiaGain (dragGain already affected drag)
+      const fingerV = ctx.state.velocity; // px/ms
+      ctx.state.velocity = fingerV * ctx.settings.inertiaGain;
 
       ctx.state.breakContact = { winX, winY, docX, docY };
       ctx.state.inertia = {
@@ -54,7 +64,6 @@ export const TypeII: ScrollStrategy = {
       };
       ctx.state.lastTs = now;
 
-      // Show highlight at exact (docX, docY) — engine maps to window each frame
       ctx.showHighlight(docX, docY);
     } else {
       ctx.state.inertia = null;
@@ -63,27 +72,28 @@ export const TypeII: ScrollStrategy = {
   },
 
   onFrame(now, ctx) {
-    const inert = ctx.state.inertia;
+    const inert = ctx.state.inertia as { active?: boolean } | null;
     if (!inert?.active) return;
 
-    const dt = now - ctx.state.lastTs;
+    let dt = now - ctx.state.lastTs;
     ctx.state.lastTs = now;
+    if (dt > 32) dt = 32;
 
-    // Exponential velocity decay:
+    // exponential decay
     const decay = Math.exp(-dt / TAU);
     ctx.state.velocity *= decay;
 
-    // Advance virtual scroll:
+    // advance virtual scroll
     ctx.setOffset(ctx.state.contentOffset - ctx.state.velocity * dt);
 
-    // Keep the highlight pinned to the same document point:
+    // keep highlight pinned
     if (ctx.state.breakContact) {
       const { docX, docY } = ctx.state.breakContact;
       ctx.showHighlight(docX, docY);
     }
 
-    // Stop when motion is negligible (or clamp in setOffset handles bounds):
-    if (Math.abs(ctx.state.velocity) < 0.02) {
+    // stop when slow
+    if (Math.abs(ctx.state.velocity) < V_EPS) {
       inert.active = false;
       ctx.hideHighlight();
     }

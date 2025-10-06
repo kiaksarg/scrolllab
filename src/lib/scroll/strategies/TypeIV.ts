@@ -50,7 +50,7 @@ export const TypeIV: ScrollStrategy = {
       const docY = ctx.state.contentOffset + (winY - rect.top);
       const docX = winX - rect.left;
 
-      // FLING: only inertiaGain here (dragGain already affected the drag)
+      // inertiaGain (dragGain already affected the drag)
       const fingerV = ctx.state.velocity; // px/ms
       ctx.state.velocity = fingerV * ctx.settings.inertiaGain;
 

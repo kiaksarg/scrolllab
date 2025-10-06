@@ -1,8 +1,8 @@
 import type { ScrollStrategy } from "../types";
 
-const TAU = 500; // decay constant (tune in pilot)
-const FLICK_V_MIN = 0.5; // px/ms; also require short release interval
-const V_EPS = 0.02; // stop threshold (px/ms)
+const TAU = 500;
+const FLICK_V_MIN = 0.5; // px/ms
+const V_EPS = 0.02;
 
 export const TypeIII: ScrollStrategy = {
   id: "III",
@@ -24,10 +24,10 @@ export const TypeIII: ScrollStrategy = {
 
     ctx.state.lastTs = now;
     ctx.state.lastY = e.clientY;
-    ctx.state.velocity = dt > 0 ? dy / dt : 0; // px/ms (vertical)
+    ctx.state.velocity = dt > 0 ? dy / dt : 0; // raw finger velocity (px/ms)
 
-    // Virtual vertical scroll:
-    ctx.setOffset(ctx.state.contentOffset - dy);
+    // DRAG: apply gain via helper (and ONLY this)
+    ctx.addOffsetDelta(-dy);
   },
 
   onPointerUp(e, ctx) {
@@ -35,16 +35,19 @@ export const TypeIII: ScrollStrategy = {
     const dt = now - ctx.state.lastTs;
     ctx.state.isDragging = false;
 
-    // Flick = fast release with sufficient velocity
+    // Use raw finger velocity for flick detection
     const isFlick = Math.abs(ctx.state.velocity) > FLICK_V_MIN && dt < 180;
     if (isFlick) {
-      const rect = ctx.container.getBoundingClientRect();
+      const rect = ctx.container!.getBoundingClientRect();
       const winX = e.clientX;
       const winY = e.clientY;
 
-      // Map break-contact to document coords at lift-off:
       const docY = ctx.state.contentOffset + (winY - rect.top);
       const docX = winX - rect.left;
+
+      // FLING: apply ONLY inertiaGain (dragGain already affected drag)
+      const fingerV = ctx.state.velocity; // px/ms
+      ctx.state.velocity = fingerV * ctx.settings.inertiaGain;
 
       ctx.state.breakContact = { winX, winY, docX, docY };
       ctx.state.inertia = {
@@ -59,22 +62,17 @@ export const TypeIII: ScrollStrategy = {
   },
 
   onFrame(now, ctx) {
-    const inert = ctx.state.inertia;
+    const inert = ctx.state.inertia as { active?: boolean } | null;
     if (!inert?.active) return;
 
-    // 1) Time step
     let dt = now - ctx.state.lastTs;
     ctx.state.lastTs = now;
-    if (dt > 32) dt = 32; // cap to avoid giant jumps after tab lag
+    if (dt > 32) dt = 32;
 
-    // 2) Decay velocity
     const decay = Math.exp(-dt / TAU);
-    const v = (ctx.state.velocity *= decay); // px/ms
+    const v = (ctx.state.velocity *= decay); // content velocity
 
-    // 3) Prepare current state
     const currentOffset = ctx.state.contentOffset;
-
-    // If no break-contact, just do normal inertial step
     if (!ctx.state.breakContact) {
       const nextOffset = currentOffset - v * dt;
       ctx.setOffset(nextOffset);
@@ -82,70 +80,54 @@ export const TypeIII: ScrollStrategy = {
       return;
     }
 
-    const rect = ctx.container.getBoundingClientRect();
+    const rect = ctx.container!.getBoundingClientRect();
     const containerTop = rect.top;
     const containerBottom = rect.bottom;
-    const docY = ctx.state.breakContact.docY;
+    const { docY } = ctx.state.breakContact;
 
-    // ---- CONFIG: how far inside to stop (px) ----
-    // If you render an 80px highlight circle (radius=40),
-    // set EDGE_MARGIN = 40 to keep the whole circle visible.
-    const EDGE_MARGIN = 24; // try 24..40 depending on your highlight
-
+    const EDGE_MARGIN = 24;
     const TOP_LINE = containerTop + EDGE_MARGIN;
     const BOTTOM_LINE = containerBottom - EDGE_MARGIN;
 
-    // 4) Where is the tracked point now and after a full step?
     const trackedWinY_now = docY - currentOffset + containerTop;
     const nextOffset = currentOffset - v * dt;
     const trackedWinY_next = docY - nextOffset + containerTop;
 
-    // 5) If we're already inside the margin, clamp immediately and stop.
     if (v <= 0 && trackedWinY_now <= TOP_LINE) {
-      const offsetAtLine = docY - TOP_LINE;
-      ctx.setOffset(offsetAtLine);
+      ctx.setOffset(docY - TOP_LINE);
       inert.active = false;
       return;
     }
     if (v >= 0 && trackedWinY_now >= BOTTOM_LINE) {
-      const offsetAtLine = docY - BOTTOM_LINE;
-      ctx.setOffset(offsetAtLine);
+      ctx.setOffset(docY - BOTTOM_LINE);
       inert.active = false;
       return;
     }
 
-    // 6) Will we cross the margin line during THIS frame?
     if (v < 0 && trackedWinY_now > TOP_LINE && trackedWinY_next <= TOP_LINE) {
-      // fraction of this frame's step where we hit TOP_LINE
-      const deltaTracked = trackedWinY_next - trackedWinY_now; // negative
-      const alpha = (TOP_LINE - trackedWinY_now) / deltaTracked; // 0..1
-      const offsetAtHit = currentOffset - v * dt * alpha;
-      ctx.setOffset(offsetAtHit);
+      const deltaTracked = trackedWinY_next - trackedWinY_now;
+      const alpha = (TOP_LINE - trackedWinY_now) / deltaTracked;
+      ctx.setOffset(currentOffset - v * dt * alpha);
       inert.active = false;
       return;
     }
-
     if (
       v > 0 &&
       trackedWinY_now < BOTTOM_LINE &&
       trackedWinY_next >= BOTTOM_LINE
     ) {
-      const deltaTracked = trackedWinY_next - trackedWinY_now; // positive
-      const alpha = (BOTTOM_LINE - trackedWinY_now) / deltaTracked; // 0..1
-      const offsetAtHit = currentOffset - v * dt * alpha;
-      ctx.setOffset(offsetAtHit);
+      const deltaTracked = trackedWinY_next - trackedWinY_now;
+      const alpha = (BOTTOM_LINE - trackedWinY_now) / deltaTracked;
+      ctx.setOffset(currentOffset - v * dt * alpha);
       inert.active = false;
       return;
     }
 
-    // 7) No crossing: apply full step
     ctx.setOffset(nextOffset);
 
-    // 8) Natural stop
-    if (Math.abs(ctx.state.velocity) < V_EPS) {
-      inert.active = false;
-    }
+    if (Math.abs(ctx.state.velocity) < V_EPS) inert.active = false;
   },
+
   teardown(ctx) {
     ctx.state.inertia = null;
   },
