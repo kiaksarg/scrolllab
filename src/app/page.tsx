@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 // app/page.tsx
 "use client";
 import { useEffect, useMemo, useState } from "react";
@@ -15,6 +14,7 @@ import { paragraphsLong } from "@/common/paragraphs";
 import ContentT1 from "@/components/ContentT1";
 import ContentT2 from "@/components/ContentT2";
 import ContentT3 from "@/components/ContentT3";
+import Image from "next/image";
 
 type ContentID = "T1" | "T2" | "T3" | "TEXT";
 
@@ -132,10 +132,13 @@ export default function Page() {
       return (
         <ContentT2
           image={
-            <img
+            <Image
               src="/content-t2.webp"
               alt="Imam Bayıldı"
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
+              sizes="100vw"
+              priority
             />
           }
         />
@@ -145,10 +148,13 @@ export default function Page() {
       return (
         <ContentT3
           image={
-            <img
+            <Image
               src="/content-t3.jpg"
-              alt="Pimientos de Padrón"
-              className="w-full h-full object-cover"
+              alt="Pimientos de Padrón with Garlic–Lemon Drizzle"
+              fill
+              className="object-cover"
+              sizes="100vw"
+              priority
             />
           }
         />
@@ -169,10 +175,13 @@ export default function Page() {
     return (
       <ContentT1
         image={
-          <img
+          <Image
             src="/content-t1.jpg"
             alt="Alubias Pintas"
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
+            sizes="100vw"
+            priority
           />
         }
       />

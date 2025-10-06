@@ -4,7 +4,7 @@ export default function ContentT3({ image }: { image?: React.ReactNode }) {
   return (
     <article className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 shadow-xl">
       {/* Hero image */}
-      <div className="aspect-[16/7] w-full bg-zinc-900">{image}</div>
+      <div className="relative aspect-[16/7] w-full overflow-hidden bg-zinc-900">{image}</div>
 
       {/* Body */}
       <div className="px-6 py-7 md:px-10 md:py-10">
