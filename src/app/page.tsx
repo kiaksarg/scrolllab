@@ -135,7 +135,7 @@ export default function Page() {
         <ContentT2
           image={
             <Image
-              src={`${prefix}/content-t1.jpg`}
+              src={`${prefix}/content-t2.webp`}
               alt="Imam Bayıldı"
               fill
               className="object-cover"
