@@ -332,8 +332,14 @@ export default function Page() {
 
           <div
             ref={highlightRef}
-            className="pointer-events-none absolute rounded-full bg-yellow-400/20 ring-1 ring-yellow-400/25"
-            style={{ width: 80, height: 80, display: "none" }}
+            className="
+                pointer-events-none 
+                absolute 
+                rounded-full
+                bg-yellow-300/35 
+                ring-2 
+                ring-yellow-300/40"
+            style={{ width: 95, height: 95, display: "none" }}
           />
         </div>
 
