@@ -9,17 +9,20 @@ import { TypeII } from "@/lib/scroll/strategies/TypeII";
 import { TypeIII } from "@/lib/scroll/strategies/TypeIII";
 import { TypeIV } from "@/lib/scroll/strategies/TypeIV";
 
+import { paragraphsLong } from "@/common/paragraphs";
+
 // Content blocks
 import ContentT1 from "@/components/ContentT1";
 import ContentT2 from "@/components/ContentT2";
 import ContentT3 from "@/components/ContentT3";
 
-type ContentID = "T1" | "T2" | "T3";
+type ContentID = "T1" | "T2" | "T3" | "TEXT";
 
 const CONTENT_LABELS: Record<ContentID, string> = {
   T1: "T1",
   T2: "T2",
   T3: "T3",
+  TEXT: "T-P",
 };
 
 const LABELS: Record<TechniqueID, string> = {
@@ -53,7 +56,10 @@ export default function Page() {
     if (qType && (["I", "II", "III", "IV"] as TechniqueID[]).includes(qType)) {
       setSel(qType);
     }
-    if (qContent && (["T1", "T2", "T3"] as ContentID[]).includes(qContent)) {
+    if (
+      qContent &&
+      (["T1", "T2", "T3", "TEXT"] as ContentID[]).includes(qContent)
+    ) {
       setContentSel(qContent);
     }
   }, []);
@@ -104,9 +110,9 @@ export default function Page() {
         }
       }
 
-      // Content switcher shortcut (optional): C cycles content
+      // Content switcher shortcut: C cycles
       if (e.key.toLowerCase() === "c") {
-        const ids: ContentID[] = ["T1", "T2", "T3"];
+        const ids: ContentID[] = ["T1", "T2", "T3", "TEXT"];
         const i = ids.indexOf(contentSel);
         setContentSel(ids[(i + 1) % ids.length]);
       }
@@ -120,7 +126,7 @@ export default function Page() {
 
   const { containerRef, contentRef, highlightRef } = useScrollEngine(strategy);
 
-  // Render selected content with its respective image
+  // Render selected content
   const ContentView = useMemo(() => {
     if (contentSel === "T2") {
       return (
@@ -148,6 +154,17 @@ export default function Page() {
         />
       );
     }
+    if (contentSel === "TEXT") {
+      return (
+        <>
+          {paragraphsLong.map((p, i) => (
+            <p key={i}>
+              {p} ({i + 1})
+            </p>
+          ))}
+        </>
+      );
+    }
     // default T1
     return (
       <ContentT1
@@ -168,12 +185,9 @@ export default function Page() {
         <header className="mb-3 flex items-center justify-between gap-3">
           <h1 className="text-xl font-semibold tracking-tight">ScrollLab</h1>
 
-          {/* Right-side controls (mobile-friendly) */}
+          {/* Top controls (mobile-friendly) */}
           <div className="flex items-center gap-2">
-            {/* Content picker: compact native select (thumb-friendly) */}
-            <label className="sr-only" htmlFor="content-picker">
-              Content
-            </label>
+            {/* Content picker */}
             <select
               id="content-picker"
               value={contentSel}
@@ -183,9 +197,9 @@ export default function Page() {
                 dark:border-neutral-700 dark:bg-neutral-900/70
                 shadow-sm backdrop-blur
               "
-              title="Pick content"
+              title="Select content"
             >
-              {(["T1", "T2", "T3"] as ContentID[]).map((id) => (
+              {(["T1", "T2", "T3", "TEXT"] as ContentID[]).map((id) => (
                 <option key={id} value={id}>
                   {CONTENT_LABELS[id]}
                 </option>
@@ -226,7 +240,6 @@ export default function Page() {
           </div>
         </header>
 
-        {/* Subheads */}
         <div className="mb-2 text-[11px] text-neutral-500 dark:text-neutral-400">
           {CONTENT_LABELS[contentSel]} • {LABELS[sel]}
         </div>
@@ -266,8 +279,8 @@ export default function Page() {
         <p className="mt-3 text-xs text-neutral-500 dark:text-neutral-400">
           Tip: <kbd>1</kbd>/<kbd>2</kbd>/<kbd>3</kbd>/<kbd>4</kbd> or{" "}
           <kbd>←</kbd>/<kbd>→</kbd> for techniques. Press <kbd>c</kbd> to cycle
-          content. Use <code>?type=III</code> and <code>?content=T2</code> in
-          the URL.
+          content. Use <code>?type=III</code> and <code>?content=T2</code> or{" "}
+          <code>?content=TEXT</code> in the URL.
         </p>
       </div>
     </main>
