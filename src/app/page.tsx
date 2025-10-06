@@ -16,6 +16,8 @@ import ContentT2 from "@/components/ContentT2";
 import ContentT3 from "@/components/ContentT3";
 import Image from "next/image";
 
+const prefix = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
 type ContentID = "T1" | "T2" | "T3" | "TEXT";
 
 const CONTENT_LABELS: Record<ContentID, string> = {
@@ -133,7 +135,7 @@ export default function Page() {
         <ContentT2
           image={
             <Image
-              src="/content-t2.webp"
+              src={`${prefix}/content-t1.jpg`}
               alt="Imam Bayıldı"
               fill
               className="object-cover"
@@ -149,7 +151,7 @@ export default function Page() {
         <ContentT3
           image={
             <Image
-              src="/content-t3.jpg"
+              src={`${prefix}/content-t3.jpg`}
               alt="Pimientos de Padrón with Garlic–Lemon Drizzle"
               fill
               className="object-cover"
@@ -176,7 +178,7 @@ export default function Page() {
       <ContentT1
         image={
           <Image
-            src="/content-t1.jpg"
+            src={`${prefix}/content-t1.jpg`}
             alt="Alubias Pintas"
             fill
             className="object-cover"
