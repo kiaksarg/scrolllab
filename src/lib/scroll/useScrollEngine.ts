@@ -1,61 +1,86 @@
+// lib/scroll/useScrollEngine.ts
 import { useEffect, useRef, useState } from "react";
-import type { ScrollCtx, ScrollStrategy } from "./types";
+import type { ScrollCtx, ScrollStrategy, ScrollSettings } from "./types";
 
-export function useScrollEngine(strategy: ScrollStrategy) {
+type EngineOpts = Partial<ScrollSettings>;
+
+export function useScrollEngine(strategy: ScrollStrategy, opts?: EngineOpts) {
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const highlightRef = useRef<HTMLDivElement>(null);
 
-  const [ctx] = useState<ScrollCtx>(() => ({
-    container: null as unknown as HTMLElement,
-    content: null as unknown as HTMLElement,
-    state: {
-      isDragging: false,
-      lastY: 0,
-      contentOffset: 0, // vertical virtual scroll
-      velocity: 0, // px/ms
-      lastTs: 0,
-      breakContact: null, // { winX, winY, docX, docY } | null
-      inertia: null,
-    },
-    metrics: () => {},
+  const [ctx] = useState<ScrollCtx>(() => {
+    const settings: ScrollSettings = {
+      dragGain: opts?.dragGain ?? 1, // <— set <1 to slow down dragging
+      inertiaGain: opts?.inertiaGain ?? 1, // <— set <1 to slow down kinetic
+    };
 
-    setOffset: (y: number) => {
-      const max = Math.max(
-        0,
-        (contentRef.current?.scrollHeight ?? 0) -
-          (containerRef.current?.clientHeight ?? 0)
-      );
-      const clamped = Math.max(0, Math.min(y, max));
-      if (contentRef.current) {
-        contentRef.current.style.transform = `translateY(${-clamped}px)`;
-      }
-      ctx.state.contentOffset = clamped;
-    },
+    const _ctx = {
+      container: null as unknown as HTMLElement,
+      content: null as unknown as HTMLElement,
+      settings,
+      state: {
+        isDragging: false,
+        lastY: 0,
+        contentOffset: 0, // virtual vertical scroll
+        velocity: 0, // px/ms
+        lastTs: 0,
+        breakContact: null as unknown, // { winX, winY, docX, docY } | null
+        inertia: null as unknown,
+      },
+      metrics: () => {},
 
-    // Place highlight using BOTH axes (docX, docY)
-    showHighlight: (docX: number, docY: number) => {
-      if (!highlightRef.current || !containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
+      setOffset: (y: number) => {
+        const max = Math.max(
+          0,
+          (contentRef.current?.scrollHeight ?? 0) -
+            (containerRef.current?.clientHeight ?? 0)
+        );
+        const clamped = Math.max(0, Math.min(y, max));
+        if (contentRef.current) {
+          contentRef.current.style.transform = `translateY(${-clamped}px)`;
+        }
+        _ctx.state.contentOffset = clamped;
+      },
 
-      // Map document → window → container-local
-      const winY = docY - ctx.state.contentOffset + rect.top;
-      const winX = docX + rect.left; // no horizontal virtual offset yet
+      addOffsetDelta: (dy: number) => {
+        const scaled = dy * settings.dragGain;
+        _ctx.setOffset(_ctx.state.contentOffset + scaled);
+      },
 
-      const radius = 40; // 80px circle
-      const localTop = winY - rect.top - radius;
-      const localLeft = winX - rect.left - radius;
+      // Place highlight using BOTH axes (docX, docY)
+      showHighlight: (docX: number, docY: number) => {
+        if (!highlightRef.current || !containerRef.current) return;
+        const rect = containerRef.current.getBoundingClientRect();
 
-      const el = highlightRef.current;
-      el.style.display = "block";
-      el.style.top = `${localTop}px`;
-      el.style.left = `${localLeft}px`;
-    },
+        // Map document → window → container-local
+        const winY = docY - _ctx.state.contentOffset + rect.top;
+        const winX = docX + rect.left; // no horizontal virtual offset yet
 
-    hideHighlight: () => {
-      if (highlightRef.current) highlightRef.current.style.display = "none";
-    },
-  }));
+        const radius = 40; // 80px circle
+        const localTop = winY - rect.top - radius;
+        const localLeft = winX - rect.left - radius;
+
+        const el = highlightRef.current;
+        el.style.display = "block";
+        el.style.top = `${localTop}px`;
+        el.style.left = `${localLeft}px`;
+      },
+
+      hideHighlight: () => {
+        if (highlightRef.current) highlightRef.current.style.display = "none";
+      },
+    } as ScrollCtx;
+
+    return _ctx;
+  });
+
+  // allow dynamic opts update (optional)
+  useEffect(() => {
+    if (opts?.dragGain !== undefined) ctx.settings.dragGain = opts.dragGain;
+    if (opts?.inertiaGain !== undefined)
+      ctx.settings.inertiaGain = opts.inertiaGain;
+  }, [opts?.dragGain, opts?.inertiaGain, ctx]);
 
   // wire refs once
   useEffect(() => {

@@ -9,6 +9,13 @@ export interface ScrollStrategy {
   teardown(ctx: ScrollCtx): void;
 }
 
+export interface ScrollSettings {
+  /** Scale for pointer-drag deltas. 1 = current behavior, 0.5 = 2x slower */
+  dragGain: number;
+  /** Scale for inertia velocity. 1 = current behavior, 0.5 = 2x slower */
+  inertiaGain: number;
+}
+
 export interface ScrollCtx {
   container: HTMLElement;
   content: HTMLElement;
@@ -30,10 +37,12 @@ export interface ScrollCtx {
     inertia: { active: boolean; v0: number; startedAt: number } | null;
   };
 
-  metrics: <T>(evt: T) => void;
-  
-  setOffset: (y: number) => void; // applies clamped translateY
+  settings: ScrollSettings;
 
+  metrics: <T>(evt: T) => void;
+
+  setOffset: (y: number) => void; // applies clamped translateY
+  addOffsetDelta: (dy: number) => void;
   // ⬇️ now take both axes to place the circle precisely
   showHighlight: (docX: number, docY: number) => void;
   hideHighlight: () => void;

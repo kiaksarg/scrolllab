@@ -126,7 +126,10 @@ export default function Page() {
 
   const strategy = useMemo(() => STRATS[sel] ?? TypeIV, [sel]);
 
-  const { containerRef, contentRef, highlightRef } = useScrollEngine(strategy);
+  const { containerRef, contentRef, highlightRef } = useScrollEngine(strategy, {
+    dragGain: .8,
+    inertiaGain: .6,
+  });
 
   // Render selected content
   const ContentView = useMemo(() => {
