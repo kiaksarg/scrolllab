@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useScrollEngine } from "@/lib/scroll/useScrollEngine";
 import type { ScrollStrategy, TechniqueID } from "@/lib/scroll/types";
 
+import { TypeI } from "@/lib/scroll/strategies/TypeI";
 import { TypeII } from "@/lib/scroll/strategies/TypeII";
 import { TypeIII } from "@/lib/scroll/strategies/TypeIII";
 import { TypeIV } from "@/lib/scroll/strategies/TypeIV";
@@ -36,7 +37,7 @@ const LABELS: Record<TechniqueID, string> = {
 };
 
 const STRATS: Partial<Record<TechniqueID, ScrollStrategy>> = {
-  // I: TypeI,
+  I: TypeI,
   II: TypeII,
   III: TypeIII,
   IV: TypeIV,
