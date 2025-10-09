@@ -303,7 +303,8 @@ export default function Page() {
         </header>
 
         <div className="mb-2 text-[11px] text-neutral-500 dark:text-neutral-400">
-          {CONTENT_LABELS[contentSel]} • {LABELS[sel]}
+          {CONTENT_LABELS[contentSel]} • {LABELS[sel]} ({dragGain},
+          {inertiaGain})
         </div>
 
         {/* Scroll container */}
