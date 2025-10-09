@@ -51,6 +51,24 @@ export function useScrollEngine(strategy: ScrollStrategy, opts?: EngineOpts) {
       // Place highlight using BOTH axes (docX, docY)
       showHighlight: (docX: number, docY: number) => {
         if (!highlightRef.current || !containerRef.current) return;
+
+        // Compute scrollability + boundaries
+        const maxOffset = Math.max(
+          0,
+          (contentRef.current?.scrollHeight ?? 0) -
+            (containerRef.current?.clientHeight ?? 0)
+        );
+        const offset = _ctx.state.contentOffset;
+        const EPS = 0.5; // guard for float rounding
+        const atBoundary =
+          maxOffset === 0 || offset <= 0 + EPS || offset >= maxOffset - EPS;
+
+        // If no scroll is possible or we're at a boundary, don't show highlight
+        if (atBoundary) {
+          highlightRef.current.style.display = "none";
+          return;
+        }
+
         const rect = containerRef.current.getBoundingClientRect();
 
         // Map document → window → container-local
