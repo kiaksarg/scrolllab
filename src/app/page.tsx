@@ -159,10 +159,17 @@ export default function Page() {
 
   const strategy = useMemo(() => STRATS[sel] ?? TypeIV, [sel]);
 
-  const { containerRef, contentRef, highlightRef } = useScrollEngine(strategy, {
-    dragGain: dragGain,
-    inertiaGain: inertiaGain,
-  });
+  const { containerRef, contentRef, highlightRef, resetTo } = useScrollEngine(
+    strategy,
+    {
+      dragGain: dragGain,
+      inertiaGain: inertiaGain,
+    }
+  );
+
+  useEffect(() => {
+    requestAnimationFrame(() => resetTo(0));
+  }, [contentSel, resetTo]);
 
   // Render selected content
   const ContentView = useMemo(() => {
@@ -303,8 +310,8 @@ export default function Page() {
         </header>
 
         <div className="mb-2 text-[11px] text-neutral-500 dark:text-neutral-400">
-          {CONTENT_LABELS[contentSel]} • {LABELS[sel]} ({dragGain},
-          {inertiaGain})
+          {CONTENT_LABELS[contentSel]} • {LABELS[sel]} ({dragGain},{inertiaGain}
+          )
         </div>
 
         {/* Scroll container */}
