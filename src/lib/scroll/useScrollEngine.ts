@@ -1,5 +1,5 @@
 // lib/scroll/useScrollEngine.ts
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { ScrollCtx, ScrollStrategy, ScrollSettings } from "./types";
 
 type EngineOpts = Partial<ScrollSettings>;
@@ -75,6 +75,17 @@ export function useScrollEngine(strategy: ScrollStrategy, opts?: EngineOpts) {
     return _ctx;
   });
 
+  const resetTo = useCallback(
+    (y = 0) => {
+      ctx.state.velocity = 0;
+      ctx.state.inertia = null;
+      ctx.state.isDragging = false;
+      ctx.hideHighlight();
+      ctx.setOffset(y);
+    },
+    [ctx]
+  );
+
   // allow dynamic opts update (optional)
   useEffect(() => {
     if (opts?.dragGain !== undefined) ctx.settings.dragGain = opts.dragGain;
@@ -122,5 +133,5 @@ export function useScrollEngine(strategy: ScrollStrategy, opts?: EngineOpts) {
     };
   }, [ctx, strategy]);
 
-  return { containerRef, contentRef, highlightRef };
+  return { containerRef, contentRef, highlightRef, resetTo };
 }
