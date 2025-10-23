@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
-import { Settings } from "lucide-react";
+import { Settings, Sun, Moon, Monitor } from "lucide-react";
+import { useTheme } from "next-themes";
 
 type Props = {
   dragGain: number;
@@ -18,6 +19,12 @@ export default function ScrollSettings({
 }: Props) {
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement | null>(null);
+
+  // === Theme ===
+  const { theme, systemTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const currentTheme = theme === "system" ? systemTheme : theme; // "light" | "dark" | undefined
 
   const setDrag = (v: number) => onChange({ dragGain: clamp(v), inertiaGain });
   const setInertia = (v: number) =>
@@ -45,6 +52,16 @@ export default function ScrollSettings({
     document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
   }, [open]);
+
+  // Small helper for selected button styling
+  const chipCls = (active: boolean) =>
+    [
+      "inline-flex h-7 w-8 items-center justify-center rounded-md border text-xs",
+      "transition-colors",
+      active
+        ? "border-neutral-900 bg-neutral-900 text-white dark:border-neutral-100 dark:bg-neutral-100 dark:text-neutral-900"
+        : "border-neutral-300/70 bg-white text-neutral-700 hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700",
+    ].join(" ");
 
   return (
     <div className="relative">
@@ -90,6 +107,48 @@ export default function ScrollSettings({
               max-h-[80svh] overflow-auto
             "
           >
+            {/* THEME (compact, icon-only on mobile) */}
+            {mounted && (
+              <div className="mb-3">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-xs font-medium">Theme</span>
+                  <div
+                    className="inline-flex items-center gap-1"
+                    role="group"
+                    aria-label="Theme mode"
+                  >
+                    <button
+                      type="button"
+                      aria-pressed={theme === "system"}
+                      title="System"
+                      onClick={() => setTheme("system")}
+                      className={chipCls(theme === "system")}
+                    >
+                      <Monitor className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      aria-pressed={theme === "light"}
+                      title="Light"
+                      onClick={() => setTheme("light")}
+                      className={chipCls(theme === "light")}
+                    >
+                      <Sun className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      aria-pressed={theme === "dark"}
+                      title="Dark"
+                      onClick={() => setTheme("dark")}
+                      className={chipCls(theme === "dark")}
+                    >
+                      <Moon className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Drag gain */}
             <div className="mb-3">
               <div className="flex items-center justify-between gap-3">

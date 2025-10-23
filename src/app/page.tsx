@@ -330,10 +330,11 @@ export default function Page() {
             className="
               will-change-transform
               px-5 py-8
-              text-[17px] leading-8 sm:text-[18px] sm:leading-9
-              tracking-[0.005em]
-              [text-wrap:pretty]
+              tracking-[0.005em] [text-wrap:pretty]
               space-y-5
+              prose prose-neutral max-w-none
+              dark:prose-invert
+              prose-headings:tracking-tight prose-p:leading-7 sm:prose-p:leading-8  
             "
           >
             {ContentView}
@@ -341,13 +342,9 @@ export default function Page() {
 
           <div
             ref={highlightRef}
-            className="
-                pointer-events-none 
-                absolute 
-                rounded-full
-                bg-yellow-300/35 
-                ring-2 
-                ring-yellow-300/40"
+            className="pointer-events-none absolute rounded-full ring-2
+           bg-amber-300/45 ring-amber-400/50
+           dark:bg-yellow-300/35 dark:ring-yellow-300/40"
             style={{ width: 95, height: 95, display: "none" }}
           />
         </div>

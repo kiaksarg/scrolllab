@@ -6,7 +6,7 @@ import {
 } from "@/types/session.type";
 
 const API_BASE = (
-  process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:4500"
+  process.env.NEXT_PUBLIC_API_BASE ?? "http://scroll-lab.informatik.umu.se"
 ).replace(/\/+$/, "");
 
 function assert(cond: unknown, msg: string): asserts cond {
