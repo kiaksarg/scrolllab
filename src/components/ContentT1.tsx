@@ -8,10 +8,9 @@ export default function ContentRecipeAlubiasPintas({
   return (
     <article
       className="
-        overflow-hidden rounded-2xl shadow-xl
-        border border-neutral-200/70 bg-white
-        dark:border-neutral-800 dark:bg-neutral-900
-        text-neutral-900 dark:text-neutral-200
+       overflow-hidden rounded-2xl shadow-xl
+        border border-neutral-200/70 bg-white text-neutral-900
+        dark:border-zinc-800 dark:bg-zinc-950 dark:text-neutral-200
       "
     >
       {/* Hero image (top) */}
