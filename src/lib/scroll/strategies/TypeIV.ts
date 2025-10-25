@@ -4,7 +4,7 @@ import type { ScrollStrategy } from "../types";
 const TAU = 500;
 const FLICK_V_MIN = 0.5; // px/ms (finger velocity threshold)
 const V_EPS = 0.02;
-const EDGE_MARGIN = 24;
+const EDGE_MARGIN = 10;
 
 export const TypeIV: ScrollStrategy = {
   id: "IV",

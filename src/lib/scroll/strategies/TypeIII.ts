@@ -85,7 +85,7 @@ export const TypeIII: ScrollStrategy = {
     const containerBottom = rect.bottom;
     const { docY } = ctx.state.breakContact;
 
-    const EDGE_MARGIN = 24;
+    const EDGE_MARGIN = 10;
     const TOP_LINE = containerTop + EDGE_MARGIN;
     const BOTTOM_LINE = containerBottom - EDGE_MARGIN;
 
