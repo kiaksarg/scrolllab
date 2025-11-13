@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useScrollEngine } from "@/lib/scroll/useScrollEngine";
 import type { ScrollStrategy, TechniqueID } from "@/lib/scroll/types";
+import { Github } from "lucide-react";
 
 import { TypeI } from "@/lib/scroll/strategies/TypeI";
 import { TypeII } from "@/lib/scroll/strategies/TypeII";
@@ -236,24 +237,26 @@ export default function Page() {
   return (
     <main className="min-h-svh bg-neutral-50 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100 transition-colors">
       <div className="mx-auto max-w-screen-sm px-4 py-4 sm:px-6 sm:py-6">
-        <header className="mb-3">
-          <div className="flex items-center justify-between gap-3 sm:gap-4">
+        <header className="mb-3 overflow-x-auto overflow-y-hidden header-scroll">
+          <div className="flex items-center gap-3 sm:gap-4 min-w-max">
             {/* Left label */}
             <h1 className="text-xl font-semibold tracking-tight shrink-0">
               SCRL
             </h1>
 
-            {/* Right group (settings + content + technique) */}
-            <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-end">
+            {/* Right group (settings + content + technique + GitHub) */}
+            <div className="flex items-center gap-2 sm:gap-3 flex-nowrap ml-auto">
               {/* Settings gear */}
-              <ScrollSettings
-                dragGain={dragGain}
-                inertiaGain={inertiaGain}
-                onChange={({ dragGain: d, inertiaGain: i }) => {
-                  setDragGain(d);
-                  setInertiaGain(i);
-                }}
-              />
+              <div className="shrink-0">
+                <ScrollSettings
+                  dragGain={dragGain}
+                  inertiaGain={inertiaGain}
+                  onChange={({ dragGain: d, inertiaGain: i }) => {
+                    setDragGain(d);
+                    setInertiaGain(i);
+                  }}
+                />
+              </div>
 
               {/* Content picker */}
               <select
@@ -261,6 +264,7 @@ export default function Page() {
                 value={contentSel}
                 onChange={(e) => setContentSel(e.target.value as ContentID)}
                 className="
+          shrink-0
           h-8 rounded-full border border-neutral-300/60 bg-white/80 px-3 text-xs
           dark:border-neutral-700 dark:bg-neutral-900/70
           shadow-sm backdrop-blur
@@ -278,7 +282,12 @@ export default function Page() {
               <div
                 role="tablist"
                 aria-label="Scrolling technique"
-                className="inline-flex items-center gap-1 rounded-full border border-neutral-300/60 p-1 text-xs dark:border-neutral-700 bg-white/70 dark:bg-neutral-900/70 backdrop-blur"
+                className="
+          shrink-0
+          inline-flex items-center gap-1 rounded-full border border-neutral-300/60 p-1 text-xs
+          dark:border-neutral-700 bg-white/70 dark:bg-neutral-900/70
+          backdrop-blur
+        "
               >
                 {(["I", "II", "III", "IV"] as TechniqueID[]).map((id) => {
                   const active = sel === id;
@@ -305,6 +314,21 @@ export default function Page() {
                   );
                 })}
               </div>
+
+              {/* GitHub icon only */}
+              <a
+                href="https://github.com/kiaksarg/scrolllab"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Open ScrollLab on GitHub"
+                className="
+          shrink-0 ml-1
+          text-neutral-500 hover:text-neutral-800
+          dark:text-neutral-400 dark:hover:text-neutral-100
+        "
+              >
+                <Github className="w-4 h-4" />
+              </a>
             </div>
           </div>
         </header>
@@ -313,7 +337,6 @@ export default function Page() {
           {CONTENT_LABELS[contentSel]} • {LABELS[sel]} ({dragGain},{inertiaGain}
           )
         </div>
-
         {/* Scroll container */}
         <div
           ref={containerRef}
@@ -348,13 +371,26 @@ export default function Page() {
             style={{ width: 95, height: 95, display: "none" }}
           />
         </div>
-
         <p className="mt-3 text-xs text-neutral-500 dark:text-neutral-400">
           Tip: <kbd>1</kbd>/<kbd>2</kbd>/<kbd>3</kbd>/<kbd>4</kbd> or{" "}
           <kbd>←</kbd>/<kbd>→</kbd> for techniques. Press <kbd>c</kbd> to cycle
           content. Use <code>?type=III</code> and <code>?content=T2</code> or{" "}
           <code>?content=TEXT</code> in the URL.
         </p>
+        <p className="mt-4 text-[0.70rem] leading-relaxed text-neutral-500 dark:text-neutral-400">
+          This demo implements the scrolling techniques described in Viktor
+          Kaptelinin’s patent application US 2023/0130520 A1 (published Apr 27,
+          2023). These techniques are reproduced here solely for research and
+          academic purposes within ScrollLab.
+        </p>
+        <a
+          href="https://github.com/kiaksarg/scrolllab"
+          target="_blank"
+          className="mt-2 flex items-center gap-1.5 text-[0.78rem] font-medium text-neutral-600 dark:text-neutral-300 hover:underline"
+        >
+          <Github className="w-3.5 h-3.5" />
+          GitHub Repository — kiaksarg/scrolllab
+        </a>
       </div>
     </main>
   );
