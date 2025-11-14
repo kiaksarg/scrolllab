@@ -237,16 +237,16 @@ export default function Page() {
   return (
     <main className="min-h-svh bg-neutral-50 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100 transition-colors">
       <div className="mx-auto max-w-screen-sm px-4 py-4 sm:px-6 sm:py-6">
-        <header className="mb-3 overflow-x-auto overflow-y-hidden header-scroll">
-          <div className="flex items-center gap-3 sm:gap-4 min-w-max">
+        <header className="mb-3">
+          <div className="flex items-center gap-3 sm:gap-4">
             {/* Left label */}
             <h1 className="text-xl font-semibold tracking-tight shrink-0">
               SCRL
             </h1>
 
-            {/* Right group (settings + content + technique + GitHub) */}
-            <div className="flex items-center gap-2 sm:gap-3 flex-nowrap ml-auto">
-              {/* Settings gear */}
+            {/* Right side: settings (not scrollable) + scrollable controls */}
+            <div className="flex-1 min-w-0 flex items-center justify-end gap-2 sm:gap-3">
+              {/* Settings gear — OUTSIDE any overflow container */}
               <div className="shrink-0">
                 <ScrollSettings
                   dragGain={dragGain}
@@ -258,77 +258,82 @@ export default function Page() {
                 />
               </div>
 
-              {/* Content picker */}
-              <select
-                id="content-picker"
-                value={contentSel}
-                onChange={(e) => setContentSel(e.target.value as ContentID)}
-                className="
-          shrink-0
-          h-8 rounded-full border border-neutral-300/60 bg-white/80 px-3 text-xs
-          dark:border-neutral-700 dark:bg-neutral-900/70
-          shadow-sm backdrop-blur
-        "
-                title="Select content"
-              >
-                {(["T1", "T2", "T3", "TEXT"] as ContentID[]).map((id) => (
-                  <option key={id} value={id}>
-                    {CONTENT_LABELS[id]}
-                  </option>
-                ))}
-              </select>
+              {/* Scrollable strip: content picker + technique buttons + GitHub */}
+              <div className="max-w-full overflow-x-auto header-scroll">
+                <div className="flex items-center gap-2 sm:gap-3 flex-nowrap w-max">
+                  {/* Content picker */}
+                  <select
+                    id="content-picker"
+                    value={contentSel}
+                    onChange={(e) => setContentSel(e.target.value as ContentID)}
+                    className="
+              shrink-0
+              h-8 rounded-full border border-neutral-300/60 bg-white/80 px-3 text-xs
+              dark:border-neutral-700 dark:bg-neutral-900/70
+              shadow-sm backdrop-blur
+            "
+                    title="Select content"
+                  >
+                    {(["T1", "T2", "T3", "TEXT"] as ContentID[]).map((id) => (
+                      <option key={id} value={id}>
+                        {CONTENT_LABELS[id]}
+                      </option>
+                    ))}
+                  </select>
 
-              {/* Technique segmented picker */}
-              <div
-                role="tablist"
-                aria-label="Scrolling technique"
-                className="
-          shrink-0
-          inline-flex items-center gap-1 rounded-full border border-neutral-300/60 p-1 text-xs
-          dark:border-neutral-700 bg-white/70 dark:bg-neutral-900/70
-          backdrop-blur
-        "
-              >
-                {(["I", "II", "III", "IV"] as TechniqueID[]).map((id) => {
-                  const active = sel === id;
-                  const disabled = !STRATS[id];
-                  return (
-                    <button
-                      key={id}
-                      role="tab"
-                      aria-selected={active}
-                      onClick={() => !disabled && setSel(id)}
-                      disabled={disabled}
-                      className={[
-                        "px-3 py-1 rounded-full transition-colors",
-                        disabled
-                          ? "opacity-40 cursor-not-allowed"
-                          : active
-                          ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
-                          : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800",
-                      ].join(" ")}
-                      title={LABELS[id]}
-                    >
-                      {id}
-                    </button>
-                  );
-                })}
+                  {/* Technique segmented picker */}
+                  <div
+                    role="tablist"
+                    aria-label="Scrolling technique"
+                    className="
+              shrink-0
+              inline-flex items-center gap-1 rounded-full border border-neutral-300/60 p-1 text-xs
+              dark:border-neutral-700 bg-white/70 dark:bg-neutral-900/70
+              backdrop-blur
+            "
+                  >
+                    {(["I", "II", "III", "IV"] as TechniqueID[]).map((id) => {
+                      const active = sel === id;
+                      const disabled = !STRATS[id];
+                      return (
+                        <button
+                          key={id}
+                          role="tab"
+                          aria-selected={active}
+                          onClick={() => !disabled && setSel(id)}
+                          disabled={disabled}
+                          className={[
+                            "px-3 py-1 rounded-full transition-colors",
+                            disabled
+                              ? "opacity-40 cursor-not-allowed"
+                              : active
+                              ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
+                              : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800",
+                          ].join(" ")}
+                          title={LABELS[id]}
+                        >
+                          {id}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* GitHub icon only */}
+                  <a
+                    href="https://github.com/kiaksarg/scrolllab"
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="Open ScrollLab on GitHub"
+                    className="
+              shrink-0 ml-1
+              text-neutral-500 hover:text-neutral-800
+              dark:text-neutral-400 dark:hover:text-neutral-100
+            "
+                  >
+                    <Github className="w-4 h-4" />
+                  </a>
+                </div>
               </div>
-
-              {/* GitHub icon only */}
-              <a
-                href="https://github.com/kiaksarg/scrolllab"
-                target="_blank"
-                rel="noreferrer"
-                aria-label="Open ScrollLab on GitHub"
-                className="
-          shrink-0 ml-1
-          text-neutral-500 hover:text-neutral-800
-          dark:text-neutral-400 dark:hover:text-neutral-100
-        "
-              >
-                <Github className="w-4 h-4" />
-              </a>
             </div>
           </div>
         </header>
